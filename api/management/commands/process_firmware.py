@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from api.models import FirmwareModel, FileModel, LootModel, LootTypeModel
 from lib.extract import Extractor
 from django.conf import settings
-from lib.parseELF import insecure_imports, is_elf, binary_informations
+from lib.parseELF import insecure_imports, is_elf, binary_informations, open_pipe
 from lib.rats import is_parsable, parse
 from lib.cert import is_cert, check_cert
 import magic
@@ -120,8 +120,9 @@ class Command(BaseCommand):
                             loot.save()
 
         if is_elf(file):
-            insecure_imports(file)
-            binary_informations(file)
+            handle = open_pipe(file)
+            insecure_imports(file, handle)
+            binary_informations(file, handle)
 
         if is_parsable(file.filepath):
             type = "static source analysis"
